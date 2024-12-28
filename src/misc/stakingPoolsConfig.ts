@@ -1,5 +1,5 @@
 import { Address, erc20Abi, formatUnits, parseUnits } from "viem";
-import { CHAIN_ZQ2_PROTOTESTNET, CHAIN_ZQ2_DOCKERCOMPOSE, getViemClient, MOCK_CHAIN, CHAIN_ZQ2_DEVNET } from "./chainConfig";
+import { CHAIN_ZQ2_PROTOMAINNET, CHAIN_ZQ2_PROTOTESTNET, CHAIN_ZQ2_DOCKERCOMPOSE, getViemClient, MOCK_CHAIN, CHAIN_ZQ2_DEVNET } from "./chainConfig";
 import { readContract } from "viem/actions";
 import { delegatorAbi, depositAbi } from "./stakingAbis";
 
@@ -150,7 +150,7 @@ export const stakingPoolsConfigForChainId: Record<string, Array<StakingPoolConfi
         address: "0x82245678902345678902345678918278372382",
         tokenAddress: "0x1234567890234567890234567890234567231",
         tokenDecimals: 18,
-        tokenSymbol: "plZIL",
+        tokenSymbol: "pZIL",
         iconUrl: "/static/logo1.webp",
         minimumStake: parseUnits("100", 18),
         withdrawPeriodInMinutes: twoWeeksInMinutes,
@@ -242,6 +242,22 @@ export const stakingPoolsConfigForChainId: Record<string, Array<StakingPoolConfi
       },
       delegatorDataProvider: fetchDelegatorDataFromNetwork
     }
+  ],
+  [CHAIN_ZQ2_PROTOMAINNET.id]: [
+    {
+      definition: {
+        id: 'MHg3QTI4',
+        address: '0xe0C095DBE85a8ca75de4749B5AEe0D18100a3C39',
+        tokenAddress: '0x7B213b5AEB896bC290F0cD8B8720eaF427098186',
+        iconUrl: '/static/logo1.webp',
+        name: 'Plunderswap',
+        tokenDecimals: 18,
+        tokenSymbol: 'pZIL',
+        minimumStake: parseUnits("100", 18),
+        withdrawPeriodInMinutes: twoWeeksInMinutes,
+      },
+      delegatorDataProvider: fetchDelegatorDataFromNetwork
+    },
   ],
   [CHAIN_ZQ2_DEVNET.id]: [
     {
