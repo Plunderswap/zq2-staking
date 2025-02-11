@@ -40,3 +40,5 @@ renders/
 secrets.cache.yaml
 
 .trunk/
+.specstory/**
+.specstory/history

@@ -430,5 +430,21 @@ export const stakingPoolsConfigForChainId: Record<
       delegatorDataProvider: fetchLiquidDelegatorDataFromNetwork,
     },
   ],
-  [CHAIN_ZQ2_PROTOMAINNET.id]: [],
+  [CHAIN_ZQ2_PROTOMAINNET.id]: [
+    {
+      definition: {
+        id: "pool2",
+        name: "Plunderswap",
+        poolType: StakingPoolType.LIQUID,
+        address: "0xe0C095DBE85a8ca75de4749B5AEe0D18100a3C39",
+        tokenAddress: "0x7B213b5AEB896bC290F0cD8B8720eaF427098186",
+        tokenDecimals: 18,
+        tokenSymbol: "plZIL",
+        iconUrl: "/static/logo1.webp",
+        minimumStake: parseUnits("100", 18),
+        withdrawPeriodInMinutes: twoWeeksInMinutes,
+      },
+      delegatorDataProvider: fetchLiquidDelegatorDataFromNetwork,
+    },
+  ],
 }
