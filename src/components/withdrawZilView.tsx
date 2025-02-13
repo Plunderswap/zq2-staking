@@ -31,7 +31,10 @@ const UnstakeCard: React.FC<UnstakeCardProps> = ({
   claimUnstake: claim,
 }) => {
   return (
-    <div className="flex gap-2.5 lg:w-full max-lg:flex-col bg-aqua-gradient rounded-[20px] items-center">
+    <div
+      className="flex gap-2.5 lg:w-full max-lg:flex-col bg-aqua-gradient rounded-[20px] items-center cursor-pointer"
+      onClick={() => selectStakingPoolForView(stakingPool.definition.id)}
+    >
       <div className="flex lg:flex-col  content-center px-3 py-6 lg:px-9.5 rounded-lg justify-between max-lg:items-center lg:w-2/3 w-full">
         <div className="flex items-center gap-2">
           <Image
@@ -80,14 +83,14 @@ const UnstakeCard: React.FC<UnstakeCardProps> = ({
               : getHumanFormDuration(unstakeInfo.availableAt) + " left"}
           </Button>
         </div>
-        <div className="max-lg:w-1/2 lg:mt-2.5">
-          <Button
-            className="btn-secondary-grey lg:py-5 py-4"
-            onClick={() => selectStakingPoolForView(stakingPool.definition.id)}
-          >
-            View
-          </Button>
-        </div>
+        {/* <div className="max-lg:w-1/2 lg:mt-2.5">
+            <Button
+              className="btn-secondary-grey lg:py-5 py-4"
+              onClick={() => selectStakingPoolForView(stakingPool.definition.id)}
+            >
+              View
+            </Button>
+          </div> */}
       </div>
     </div>
   )
@@ -109,7 +112,10 @@ const RewardCard: React.FC<RewardCardProps> = ({
   stakeReward,
 }) => {
   return (
-    <div className="flex gap-2.5 lg:w-full max-lg:flex-col bg-aqua-gradient rounded-[20px] items-center">
+    <div
+      className="flex gap-2.5 lg:w-full max-lg:flex-col bg-aqua-gradient rounded-[20px] items-center cursor-pointer"
+      onClick={() => selectStakingPoolForView(stakingPool.definition.id)}
+    >
       <div className="flex lg:flex-col  content-center px-3 py-6 lg:px-9.5 rounded-lg justify-between max-lg:items-center lg:w-2/3 w-full">
         <div className="flex items-center gap-2">
           <Image
@@ -163,24 +169,23 @@ const RewardCard: React.FC<RewardCardProps> = ({
         <div className="max-lg:w-1/2">
           <Button
             className="btn-primary-grey lg:py-5 py-4"
-            onClick={() => claimReward(stakingPool.definition.address)}
-          >
-            Claim Reward
-          </Button>
-
-          <Button
-            className="btn-secondary-gray2"
             onClick={() => stakeReward(stakingPool.definition.address)}
           >
             Stake Reward
           </Button>
         </div>
         <div className="max-lg:w-1/2 lg:mt-2.5">
-          <Button
+          {/* <Button
             className="btn-secondary-grey lg:py-5 py-4"
             onClick={() => selectStakingPoolForView(stakingPool.definition.id)}
           >
             View
+          </Button> */}
+          <Button
+            className="btn-secondary-grey lg:py-5 py-4"
+            onClick={() => claimReward(stakingPool.definition.address)}
+          >
+            Claim Reward
           </Button>
         </div>
       </div>
@@ -215,7 +220,7 @@ const WithdrawZilView: React.FC = () => {
         {anyItemsAvailable ? (
           <>
             <h1 className="h1 text-white">My Claims</h1>
-            <p className="mt-2 h2 text-white4">
+            <p className="mt-2 body2-v2 text-white4">
               Help us Empower and secure <br /> the Zilliqa Chain{" "}
             </p>
           </>
@@ -296,7 +301,7 @@ const WithdrawZilView: React.FC = () => {
                   height={56}
                 />
               </div>
-              <div className="bold26 mb-15 font-medium">
+              <div className="mb-15 body2-v2 text-white4">
                 No claims? We’d love to hear
                 <br /> your feedback !
               </div>
