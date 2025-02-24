@@ -15,9 +15,11 @@ import { useEffect, useState } from "react"
 import { AppConfig } from "./api/config"
 import { AppConfigStorage } from "@/contexts/appConfigStorage"
 import Head from "next/head"
+import { GoogleTagManager } from "@next/third-parties/google"
+
+const queryClient = new QueryClient()
 
 export default function App({ Component, pageProps }: AppProps) {
-  const queryClient = new QueryClient()
   const [appConfig, setAppConfig] = useState<AppConfig | null>(null)
   const [loadingPercentage, setLoadingPercentage] = useState(0)
   const [displayedPercentage, setDisplayedPercentage] = useState(0)
@@ -93,18 +95,16 @@ export default function App({ Component, pageProps }: AppProps) {
           fadeOut ? "opacity-0" : "opacity-100"
         }`}
       >
-        <div className="h-full flex flex-col justify-between">
-          <div className="w-full h-10 overflow-hidden">
-            <div
-              className="h-full bg-colorful-gradient"
-              style={{
-                width: `${displayedPercentage}%`,
-              }}
-            ></div>
-          </div>
-          <div className="self-end text-80 lg:text-114 font-extrabold mr-7">
-            {Math.round(displayedPercentage)}%
-          </div>
+        <div className="w-full h-10 ">
+          <div
+            className="h-full bg-colorful-gradient"
+            style={{
+              width: `${displayedPercentage}%`,
+            }}
+          ></div>
+        </div>
+        <div className="absolute self-end text-80 lg:text-114 font-extrabold right-5 bottom-0">
+          {Math.round(displayedPercentage)}%
         </div>
       </div>
     )
@@ -112,12 +112,15 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <AppConfigStorage.Provider initialState={{ appConfig }}>
+      <GoogleTagManager gtmId={appConfig.gtmId} />
       <ConfigProvider>
         <WagmiProvider
           config={getWagmiConfig(
             appConfig.chainId,
-            appConfig.walletConnectPrivateKey
+            appConfig.walletConnectPrivateKey,
+            appConfig.appUrl
           )}
+          reconnectOnMount={true}
         >
           <QueryClientProvider client={queryClient}>
             <RainbowKitProvider showRecentTransactions={true}>
@@ -126,6 +129,18 @@ export default function App({ Component, pageProps }: AppProps) {
                   <StakingOperations.Provider>
                     <Head>
                       <title>Zilliqa Staking</title>
+                      <link
+                        rel="icon"
+                        type="image/png"
+                        sizes="16x16"
+                        href="/favicon-16x16.ico"
+                      />
+                      <link
+                        rel="icon"
+                        type="image/png"
+                        sizes="32x32"
+                        href="/favicon-32x32.ico"
+                      />
                     </Head>
                     <Component {...pageProps} />
                     <DummyWalletSelector />

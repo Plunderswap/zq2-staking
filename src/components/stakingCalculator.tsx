@@ -8,15 +8,20 @@ import {
   convertZilValueInToken,
   getTxExplorerUrl,
   formatAddress,
+  getHumanFormDuration,
 } from "@/misc/formatting"
 import { formatUnits, parseEther } from "viem"
 import { StakingOperations } from "@/contexts/stakingOperations"
 import { AppConfigStorage } from "@/contexts/appConfigStorage"
 import Link from "next/link"
 import { StakingPoolType } from "@/misc/stakingPoolsConfig"
+import CustomWalletConnect from "./customWalletConnect"
+import { DateTime } from "luxon"
 
 const StakingCalculator: React.FC = () => {
   const { appConfig } = AppConfigStorage.useContainer()
+
+  const { isWalletConnected } = WalletConnector.useContainer()
 
   const { zilAvailable } = WalletConnector.useContainer()
   const {
@@ -27,6 +32,8 @@ const StakingCalculator: React.FC = () => {
   } = StakingOperations.useContainer()
 
   const { stakingPoolForView } = StakingPoolsStorage.useContainer()
+
+  const stakingTxCostInZill = 4
 
   const [zilToStake, setZilToStake] = useState<string>(
     formatUnits(
@@ -65,14 +72,46 @@ const StakingCalculator: React.FC = () => {
   }
 
   const zilToStakeNumber = parseFloat(zilToStake)
-
   const zilInWei = parseEther(zilToStake)
-  const zilToStakeOk =
-    !isNaN(zilToStakeNumber) && zilToStakeNumber <= (zilAvailable || 0n)
-  const canStake =
-    stakingPoolForView?.stakingPool.data &&
-    zilToStakeNumber > 0 &&
-    zilToStakeNumber <= (zilAvailable || 0n)
+
+  const { canStake, whyCantStake } = (() => {
+    if (!stakingPoolForView?.stakingPool.data) {
+      return {
+        canStake: false,
+        whyCantStake: "Loading staking pool data",
+      }
+    } else if (zilToStakeNumber <= 0 || isNaN(zilToStakeNumber)) {
+      return {
+        canStake: false,
+        whyCantStake: "Please enter a valid amount",
+      }
+    } else if (zilInWei > (zilAvailable || 0n)) {
+      return {
+        canStake: false,
+        whyCantStake: "Insufficient ZIL balance",
+      }
+    } else if (
+      zilInWei + parseEther(`${stakingTxCostInZill}`) >
+      (zilAvailable || 0n)
+    ) {
+      return {
+        canStake: false,
+        whyCantStake: "Insufficient ZIL balance for transaction fee",
+      }
+    } else if (
+      zilInWei < stakingPoolForView.stakingPool.definition.minimumStake
+    ) {
+      return {
+        canStake: false,
+        whyCantStake: `Amount ${zilToStakeNumber} ZIL is below minimum stake ${formatUnits(stakingPoolForView.stakingPool.definition.minimumStake, 18)} ZIL`,
+      }
+    } else {
+      return {
+        canStake: true,
+        whyCantStake: "",
+      }
+    }
+  })()
 
   const onMinClick = () => {
     setZilToStake(
@@ -81,31 +120,39 @@ const StakingCalculator: React.FC = () => {
   }
 
   const onMaxClick = () => {
-    setZilToStake(`${formatUnits(zilAvailable || 0n, 18)}`)
+    const allZil = formatUnits(zilAvailable || 0n, 18)
+    const roundedToNiceNumber = allZil.split(".")[0]
+    const availableMinusFees =
+      parseFloat(roundedToNiceNumber) - stakingTxCostInZill
+
+    setZilToStake(`${availableMinusFees}`)
   }
 
   const isPoolLiquid = () =>
     stakingPoolForView?.stakingPool.definition.poolType ===
     StakingPoolType.LIQUID
 
+  const unboudingPeriod = getHumanFormDuration(
+    DateTime.now().plus({
+      minutes:
+        stakingPoolForView?.stakingPool.definition.withdrawPeriodInMinutes || 0,
+    })
+  )
+
   return (
     stakingPoolForView && (
       <>
-        <div className="max-h-[calc(90vh-50vh)] lg:max-h-[calc(90vh-45vh)] scrollbar-gradient overflow-y-scroll">
-          <div className="flex justify-between lg:gap-10 my-2.5 lg:my-4 p-3 lg:p-5 xl:p-7 bg-grey-gradient rounded-xl items-center">
+        <div className="">
+          <div className="flex justify-between lg:gap-10 4k:gap-14 my-2.5 lg:my-4 4k:my-6 p-3 lg:p-5 xl:p-7 4k:p-10 bg-grey-gradient rounded-xl items-center">
             <div className="h-fit self-center">
               <Input
                 className="flex items-baseline !bg-transparent !border-transparent !text-white1 bold33 px-0"
-                //   ${
-                //   zilToStakeOk ? '!text-white1' : '!text-red1'
-                // }
-
                 value={zilToStake}
                 onChange={handleChange}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 prefix="ZIL"
-                status={!zilToStakeOk ? "error" : undefined}
+                status={!canStake ? "warning" : undefined}
               />
               <span className="flex items-center whitespace-nowrap ">
                 {stakingPoolForView!.stakingPool.data ? (
@@ -125,7 +172,14 @@ const StakingCalculator: React.FC = () => {
                         {stakingPoolForView.stakingPool.definition.tokenSymbol}{" "}
                       </span>
                     )}
-                    <span className="medium17 ml-2 text-aqua1">
+                    <span
+                      className={`${
+                        stakingPoolForView?.stakingPool.definition.poolType ===
+                        StakingPoolType.LIQUID
+                          ? "text-aqua1"
+                          : "text-purple3"
+                      } medium17 ml-2 mr-1`}
+                    >
                       ~
                       {formatPercentage(
                         stakingPoolForView!.stakingPool.data.apr
@@ -135,7 +189,16 @@ const StakingCalculator: React.FC = () => {
                 ) : (
                   <div className="animated-gradient mr-1 h-[1.5em] w-[3em]"></div>
                 )}
-                <span className="medium17 text-aqua1"> APR</span>
+                <span
+                  className={`${
+                    stakingPoolForView?.stakingPool.definition.poolType ===
+                    StakingPoolType.LIQUID
+                      ? "text-aqua1"
+                      : "text-purple3"
+                  } medium17`}
+                >
+                  APR
+                </span>
               </span>
             </div>
 
@@ -155,25 +218,73 @@ const StakingCalculator: React.FC = () => {
             </div>
           </div>
           <div className="flex flex-col">
-            <div className="flex mt-8 lg:mt-2 mb-5 lg:order-1 order-2">
-              <Button
-                type="default"
-                size="large"
-                className="btn-primary-gradient-aqua-lg lg:btn-primary-gradient-aqua mx-auto lg:w-1/2 w-2/3"
-                disabled={!canStake}
-                onClick={() =>
-                  stake(
-                    stakingPoolForView.stakingPool.definition.address,
-                    zilInWei
-                  )
-                }
-                loading={isStakingInProgress}
-              >
-                Stake
-              </Button>
+            <div className="flex mt-2 mb-3">
+              {isWalletConnected ? (
+                <>
+                  {canStake ? (
+                    <Button
+                      type="default"
+                      size="large"
+                      className={`${
+                        stakingPoolForView?.stakingPool.definition.poolType ===
+                        StakingPoolType.LIQUID
+                          ? "btn-primary-gradient-aqua-lg lg:btn-primary-gradient-aqua "
+                          : "btn-primary-gradient-purple-lg lg:btn-primary-gradient-purple "
+                      } mx-auto lg:w-1/2 w-2/3 `}
+                      onClick={() =>
+                        stake(
+                          stakingPoolForView.stakingPool.definition.address,
+                          zilInWei
+                        )
+                      }
+                      loading={isStakingInProgress}
+                    >
+                      Stake
+                    </Button>
+                  ) : (
+                    <Tooltip
+                      placement="top"
+                      arrow={true}
+                      color="#555555"
+                      title={whyCantStake}
+                    >
+                      <Button
+                        type="default"
+                        size="large"
+                        className="btn-primary-gradient-aqua-lg lg:btn-primary-gradient-aqua  mx-auto lg:w-1/2 w-2/3"
+                        disabled={true}
+                      >
+                        Stake
+                      </Button>
+                    </Tooltip>
+                  )}
+                </>
+              ) : (
+                <CustomWalletConnect notConnectedClassName="btn-primary-gradient-aqua sm:px-10 sm:max-w-fit mx-auto lg:w-1/2 w-2/3">
+                  Connect wallet
+                </CustomWalletConnect>
+              )}
             </div>
-            <div className="flex justify-between pt-2.5 lg:pt-5 border-t border-black2 order-1 lg:order-2">
-              <div className="flex flex-col gap-3.5 regular-base">
+
+            {stakingCallTxHash !== undefined && (
+              <div className="text-center mb-3 regular-base ">
+                <Link
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  href={getTxExplorerUrl(stakingCallTxHash, appConfig.chainId)}
+                  passHref={true}
+                >
+                  Last staking transaction:{" "}
+                  <span className="text-white underline">
+                    {" "}
+                    {formatAddress(stakingCallTxHash)}
+                  </span>
+                </Link>
+              </div>
+            )}
+
+            <div className="flex justify-between pt-2.5 lg:pt-5 4k:pt-7 border-t border-black2 lg:pb-10">
+              <div className="flex flex-col lg:gap-3.5 gap-1 4k:gap-4 regular-base">
                 <div className=" ">
                   Commission Fee:{" "}
                   {stakingPoolForView!.stakingPool.data ? (
@@ -186,20 +297,26 @@ const StakingCalculator: React.FC = () => {
                     <div className="animated-gradient ml-1 h-[1em] w-[2em]"></div>
                   )}
                 </div>
-                <div className="">
-                  Max transaction cost: {zilToStake ? "0.01" : "0"}$
-                </div>
+                <div>Max transaction cost: ~{stakingTxCostInZill} ZIL</div>
+                <div>Unbonding Period: {unboudingPeriod}</div>
               </div>
-              <div className="flex flex-col max-xl:justify-between xl:gap-3.5 xl:items-end">
+              <div className="flex flex-col lg:gray-base gray-base2 xl:gap-3.5 4k:gap-5 xl:items-end justify-start">
                 {isPoolLiquid() && (
-                  <div className="flex flex-col xl:flex-row xl:gap-5">
-                    <div className="gray-base">Rate</div>
+                  <div className="flex  max-lg:gap-2 max-xl:justify-between max-lg:items-start flex-row xl:gap-5 4k:gap-6">
+                    <div className=" ">Rate</div>
                     {stakingPoolForView!.stakingPool.data && (
-                      <div className="text-gray9">{`1 ZIL = ~${stakingPoolForView.stakingPool.data.zilToTokenRate} ${stakingPoolForView.stakingPool.definition.tokenSymbol}`}</div>
+                      <div className="text-gray9">{`1 ZIL = ~${stakingPoolForView.stakingPool.data.zilToTokenRate.toPrecision(3)} ${stakingPoolForView.stakingPool.definition.tokenSymbol}`}</div>
                     )}
                   </div>
                 )}
-                <div className="text-gray9 text-aqua1 flex flex-row xl:gap-5">
+                <div
+                  className={`${
+                    stakingPoolForView?.stakingPool.definition.poolType ===
+                    StakingPoolType.LIQUID
+                      ? "text-aqua1"
+                      : "text-purple3"
+                  }  flex flex-row xl:gap-5 4k:gap-6 `}
+                >
                   <Tooltip
                     placement="top"
                     arrow={true}
@@ -207,7 +324,16 @@ const StakingCalculator: React.FC = () => {
                     className=" mr-1"
                     title="Annual Percentage Rate"
                   >
-                    <span className="gray-base">APR </span>
+                    <span
+                      className={`${
+                        stakingPoolForView?.stakingPool.definition.poolType ===
+                        StakingPoolType.LIQUID
+                          ? "text-aqua1"
+                          : "text-purple3"
+                      } lg:gray-base gray-base2 `}
+                    >
+                      APR{" "}
+                    </span>
                   </Tooltip>
                   {stakingPoolForView!.stakingPool.data ? (
                     <>
@@ -224,19 +350,6 @@ const StakingCalculator: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {stakingCallTxHash !== undefined && (
-          <div className="text-center gradient-bg-1 py-2">
-            <Link
-              rel="noopener noreferrer"
-              target="_blank"
-              href={getTxExplorerUrl(stakingCallTxHash, appConfig.chainId)}
-              passHref={true}
-            >
-              Last staking transaction: {formatAddress(stakingCallTxHash)}
-            </Link>
-          </div>
-        )}
 
         {stakeContractCallError && (
           <div className="text-red1 text-center">

@@ -6,11 +6,13 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  safelist: ["h3-inactive"],
   theme: {
     extend: {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        aquaBlue:
+          "linear-gradient(270deg, rgba(6, 187, 179, 0.8) -13.46%, rgba(57, 30, 188, 0.8) 140.38%)",
+
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
         "primary-gradient":
@@ -25,6 +27,11 @@ const config: Config = {
           " linear-gradient(90deg, rgba(78, 78, 78, 0.3) -11.22%, rgba(32, 40, 50, 0.25) 47.4%, rgba(78, 78, 78, 0.3) 98.85%)",
         "aqua-gradient":
           "linear-gradient(90deg, rgba(124, 125, 126, 0.18) -11.22%, rgba(122, 131, 166, 0.15) 47.4%, rgba(124, 125, 126, 0.18) 98.85%)",
+        "aqua-grey-gradient":
+          "linear-gradient(180deg, var(--grey-black, #000) 33%, rgba(0, 0, 0, 0.00) 100%)",
+
+        "custom-grey-gradient":
+          "linear-gradient(90deg, rgba(78, 78, 78, 0.30) 0%, rgba(32, 40, 50, 0.25) 49%, rgba(78, 78, 78, 0.30) 92%)",
       },
       colors: {
         black1: "#010101",
@@ -45,6 +52,7 @@ const config: Config = {
         gray11: "#858A8A",
         gray12: "#333333",
         gray13: "#8E8E8E",
+        gray14: "#878787",
 
         white1: "#F1F4F4",
         white2: "#F7FBFA",
@@ -52,17 +60,22 @@ const config: Config = {
         white4: "#D7D8D8",
 
         blue1: "#1966F7",
+        navyBlue: "#391EBCB2",
 
         aqua1: "#00D0C6",
         aqua2: "#6DD3C2",
         aqua3: "#BCE6EC",
         aqua4: "#00D0C633",
+        aqua5: "#00D0C699",
         tealDark: "#173C3F",
 
         purple1: "#7839FF",
         purple2: "#B9A9FB",
         purple3: "#87A1FF",
         PurpleDarker: "#2B2970",
+        purple4: "#522EFF",
+        purple5: "#5B6FFF",
+        purpleDark: "#522EFF33",
 
         orange1: "#FE9950",
 
@@ -105,7 +118,7 @@ const config: Config = {
       borderRadius: {
         "10": "10px",
         "160": "160px",
-
+        "15": "15px",
         "2.5xl": "1.25rem",
       },
       lineHeight: {
@@ -141,7 +154,12 @@ const config: Config = {
         "21": "84px",
       },
       screens: {
+        xxs: "380px",
         xs: "450px",
+        "4k": "2380px",
+      },
+      backdropBlur: {
+        "17": "17px",
       },
     },
   },

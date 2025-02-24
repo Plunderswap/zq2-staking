@@ -17,8 +17,64 @@ import {
   UserUnstakingPoolData,
 } from "@/misc/walletsConfig"
 import { AppConfigStorage } from "./appConfigStorage"
+import { useRouter } from "next/router"
+
+// all available withdraws for one delegator are withdrawn using single tx, so we aggregate them to shoow only one UI entry
+function mergeAvailableWithdrawUnstakeRequests(
+  data: {
+    unstakeInfo: UserUnstakingPoolData
+    stakingPool: StakingPool
+  }[]
+) {
+  return data
+    .reduce(
+      (acc, unstakeData) => {
+        // if not availble then we want to have a separate entry for it
+        if (unstakeData.unstakeInfo.availableAt > DateTime.now()) {
+          acc.push(unstakeData)
+          return acc
+        }
+
+        const existingIdx = acc.findIndex(
+          (entry) =>
+            entry.stakingPool.definition.id ===
+            unstakeData.stakingPool.definition.id
+        )
+
+        if (existingIdx !== -1) {
+          // if we already have an available entry for this pool, we want to aggregate the zilAmount
+          acc[existingIdx] = {
+            stakingPool: unstakeData.stakingPool,
+            unstakeInfo: {
+              availableAt: unstakeData.unstakeInfo.availableAt,
+              address: unstakeData.unstakeInfo.address,
+              zilAmount:
+                unstakeData.unstakeInfo.zilAmount +
+                acc[existingIdx].unstakeInfo.zilAmount,
+            },
+          }
+        } else {
+          // if we don't yet have an available entry for this pool, we want to add it
+          acc.push(unstakeData)
+        }
+
+        return acc
+      },
+      new Array<{
+        unstakeInfo: UserUnstakingPoolData
+        stakingPool: StakingPool
+      }>()
+    )
+    .toSorted(
+      (claimA, claimB) =>
+        claimA.unstakeInfo.availableAt.diff(claimB.unstakeInfo.availableAt)
+          .milliseconds
+    )
+}
 
 const useStakingPoolsStorage = () => {
+  const router = useRouter()
+
   const { walletAddress } = WalletConnector.useContainer()
 
   const { appConfig } = AppConfigStorage.useContainer()
@@ -38,11 +94,6 @@ const useStakingPoolsStorage = () => {
   >([])
 
   const [stakingPoolForView, setSelectedStakingPool] =
-    useState<StakingPool | null>(null)
-
-  const [stakingPoolForStaking, setStakingPoolForStaking] =
-    useState<StakingPool | null>(null)
-  const [stakingPoolForUnstaking, setStakingPoolForUnstaking] =
     useState<StakingPool | null>(null)
 
   const [isUnstakingDataLoading, setIsUnstakingDataLoading] = useState(false)
@@ -110,6 +161,22 @@ const useStakingPoolsStorage = () => {
     )
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    const poolToShow = router.query.poolId as string | null
+
+    const selectedPool =
+      poolToShow &&
+      availableStakingPoolsData.find(
+        (pool) => pool.definition.id === poolToShow
+      )
+
+    if (selectedPool) {
+      setSelectedStakingPool(selectedPool)
+    } else {
+      setSelectedStakingPool(null)
+    }
+  }, [router.query.poolId, availableStakingPoolsData])
+
   useEffect(
     function updateStakingForViewOnStakingPoolsDataChange() {
       if (stakingPoolForView) {
@@ -126,53 +193,27 @@ const useStakingPoolsStorage = () => {
   )
 
   const selectStakingPoolForView = (stakingPoolId: string | null) => {
-    if (!stakingPoolId) {
-      setSelectedStakingPool(null)
+    if (!stakingPoolId || stakingPoolId === stakingPoolForView?.definition.id) {
+      const currentQuery = router.query
+      delete currentQuery.poolId
+
+      router.push(
+        {
+          query: currentQuery,
+        },
+        undefined,
+        { shallow: true }
+      )
+
       return
-    }
-
-    const selectedPool = availableStakingPoolsData.find(
-      (pool) => pool.definition.id === stakingPoolId
-    )
-
-    if (selectedPool) {
-      if (selectedPool?.definition.id === stakingPoolForView?.definition.id) {
-        setSelectedStakingPool(null)
-      } else {
-        setSelectedStakingPool(selectedPool)
-      }
-    }
-
-    setStakingPoolForStaking(null)
-  }
-
-  const selectStakingPoolForStaking = (stakingPoolId: string | null) => {
-    if (!stakingPoolId) {
-      setStakingPoolForStaking(null)
-      return
-    }
-
-    const selectedPool = availableStakingPoolsData.find(
-      (pool) => pool.definition.id === stakingPoolId
-    )
-
-    if (selectedPool) {
-      setStakingPoolForStaking(selectedPool)
-    }
-  }
-
-  const selectStakingPoolForUnstaking = (stakingPoolId: string | null) => {
-    if (!stakingPoolId) {
-      setStakingPoolForUnstaking(null)
-      return
-    }
-
-    const selectedPool = availableStakingPoolsData.find(
-      (pool) => pool.definition.id === stakingPoolId
-    )
-
-    if (selectedPool) {
-      setStakingPoolForUnstaking(selectedPool)
+    } else {
+      router.push(
+        {
+          query: { poolId: stakingPoolId },
+        },
+        undefined,
+        { shallow: true }
+      )
     }
   }
 
@@ -209,31 +250,22 @@ const useStakingPoolsStorage = () => {
             (userPoolData) =>
               userPoolData.address === stakingPoolForView.definition.address
           ),
-          unstaked: userUnstakesData.filter(
+          unstaked: mergeAvailableWithdrawUnstakeRequests(
+            userUnstakesData
+              .filter(
+                (userPoolData) =>
+                  userPoolData.address === stakingPoolForView.definition.address
+              )
+              .map((unstakeInfo) => ({
+                unstakeInfo,
+                stakingPool: stakingPoolForView,
+              }))
+          ).map((unstakeData) => unstakeData.unstakeInfo),
+          reward: userNonLiquidPoolRewards.find(
             (userPoolData) =>
               userPoolData.address === stakingPoolForView.definition.address
           ),
         },
-      }
-    : null
-
-  const combinedSelectedStakingPoolForStakingData = stakingPoolForStaking
-    ? {
-        stakingPool: stakingPoolForStaking,
-        userData: userStakingPoolsData.find(
-          (userPool) =>
-            userPool.address === stakingPoolForStaking.definition.address
-        ),
-      }
-    : null
-
-  const combinedSelectedStakingPoolForUnstakingData = stakingPoolForUnstaking
-    ? {
-        stakingPool: stakingPoolForUnstaking,
-        userData: userStakingPoolsData.find(
-          (userPool) =>
-            userPool.address === stakingPoolForUnstaking.definition.address
-        ),
       }
     : null
 
@@ -253,28 +285,45 @@ const useStakingPoolsStorage = () => {
       )!,
     })) || []
 
-  const availableForUnstaking = combinedUserUnstakesData.filter(
-    (unstakeData) => unstakeData.unstakeInfo.availableAt <= DateTime.now()
+  const availableForUnstaking = mergeAvailableWithdrawUnstakeRequests(
+    combinedUserUnstakesData.filter(
+      (unstakeData) => unstakeData.unstakeInfo.availableAt <= DateTime.now()
+    )
   )
-  const pendingUnstaking = combinedUserUnstakesData.filter(
-    (unstakeData) => unstakeData.unstakeInfo.availableAt > DateTime.now()
-  )
+
+  const pendingUnstaking = combinedUserUnstakesData
+    .filter(
+      (unstakeData) => unstakeData.unstakeInfo.availableAt > DateTime.now()
+    )
+    .toSorted(
+      (claimA, claimB) =>
+        claimA.unstakeInfo.availableAt.diff(claimB.unstakeInfo.availableAt)
+          .milliseconds
+    )
+
+  const getMinimalPoolStakingAmount = (stakinPoolAddress: string) => {
+    const stakingPoolData = availableStakingPoolsData.find(
+      (pool) => pool.definition.address === stakinPoolAddress
+    )
+
+    if (!stakingPoolData) {
+      throw new Error("Staking pool not found") // this means that config is invalid
+    }
+
+    return stakingPoolData.definition.minimumStake
+  }
 
   return {
     availableStakingPools: availableStakingPoolsData,
     stakingPoolForView: combinedSelectedStakingPoolForViewData,
-    stakingPoolForStaking: combinedSelectedStakingPoolForStakingData,
-    stakingPoolForUnstaking: combinedSelectedStakingPoolForUnstakingData,
     selectStakingPoolForView,
-    selectStakingPoolForStaking,
-    selectStakingPoolForUnstaking,
     combinedStakingPoolsData,
-    userUnstakesData,
     availableForUnstaking,
     pendingUnstaking,
     nonLiquidRewards: combinedUserNonLiquidPoolRewards,
     reloadUserStakingPoolsData,
     isUnstakingDataLoading,
+    getMinimalPoolStakingAmount,
   }
 }
 
