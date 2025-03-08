@@ -48,11 +48,11 @@ const MobilePopup = ({
             Start earning ZIL
           </h2>
           <p className="text-gray14 text-16 font-medium leading-tight mt-3 ">
-            Help us Empower and <br />
-            secure the Zilliqa Chain.
+            Stake ZIL. <br /> Earn Rewards.
+            <br /> Secure the Network.
           </p>
           <div className="flex items-center space-x-4 mt-6">
-            <CustomWalletConnect notConnectedClassName="capitalize text-16  font-bold btn-primary-gradient-aqua !w-fit  group flex items-center justify-center">
+            <CustomWalletConnect notConnectedClassName="capitalize text-16  font-bold btn-primary-teal !w-fit  group flex items-center justify-center">
               Connect wallet
               <Image
                 className="  h-4 w-4 transform transition-transform ease-out duration-500 group-hover:translate-x-2"

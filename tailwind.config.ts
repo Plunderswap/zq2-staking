@@ -11,8 +11,7 @@ const config: Config = {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         aquaBlue:
-          "linear-gradient(270deg, rgba(6, 187, 179, 0.8) -13.46%, rgba(57, 30, 188, 0.8) 140.38%)",
-
+          "linear-gradient(270deg, rgba(0, 208, 198, 0.80) -10.58%, rgba(82, 46, 255, 0.80) 158.65%)",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
         "primary-gradient":
@@ -32,6 +31,19 @@ const config: Config = {
 
         "custom-grey-gradient":
           "linear-gradient(90deg, rgba(78, 78, 78, 0.30) 0%, rgba(32, 40, 50, 0.25) 49%, rgba(78, 78, 78, 0.30) 92%)",
+
+        "gray-grad": "linear-gradient(90deg, #212020 0%, #2d2c2c 100%)",
+
+        "gray-gradient":
+          "linear-gradient(90deg, rgba(78, 78, 78, 0.30) 0%, rgba(32, 40, 50, 0.25) 50%, rgba(78, 78, 78, 0.30) 92%)",
+        "focus-gradient":
+          "linear-gradient(90deg, rgba(57, 35, 162, 0.20) 0%, rgba(19, 136, 130, 0.20) 100%)",
+        "teal-gradient":
+          "linear-gradient(90deg, rgba(23, 60, 63, 0.40) -2.48%, rgba(23, 60, 63, 0.25) 99.35%)",
+        "purple-gradient":
+          "linear-gradient(90deg, rgba(83, 57, 211, 0.30) -17.49%, rgba(83, 57, 211, 0.15) 90.6%)",
+        "red-gradient":
+          "linear-gradient(90deg, rgba(255, 74, 74, 0.30) -12.7%, rgba(255, 74, 74, 0.20) 66.28%)",
       },
       colors: {
         black1: "#010101",
@@ -58,16 +70,18 @@ const config: Config = {
         white2: "#F7FBFA",
         white3: "#E1E2E2",
         white4: "#D7D8D8",
+        white5: "#DCD5FF",
 
         blue1: "#1966F7",
-        navyBlue: "#391EBCB2",
 
         aqua1: "#00D0C6",
         aqua2: "#6DD3C2",
         aqua3: "#BCE6EC",
         aqua4: "#00D0C633",
         aqua5: "#00D0C699",
+        aqua6: "#1EC8C0",
         tealDark: "#173C3F",
+        blackTeal: "#051B1D",
 
         purple1: "#7839FF",
         purple2: "#B9A9FB",
@@ -76,6 +90,7 @@ const config: Config = {
         purple4: "#522EFF",
         purple5: "#5B6FFF",
         purpleDark: "#522EFF33",
+        blackpurple: "#19152D",
 
         orange1: "#FE9950",
 

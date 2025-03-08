@@ -4,16 +4,19 @@ import CustomWalletConnect from "./customWalletConnect"
 
 const LoginView: React.FC = () => {
   return (
-    <div className="relative 4k:mt-52">
+    <div className="relative">
       <div className="text-center p-4">
-        <h1 className="bold52 text-white">Staking Portal</h1>
+        <h1 className="bold33 text-white lg:mt-20 4k:mt-56">
+          Stake ZIL. <br /> Earn Rewards.
+          <br /> Secure the Network.
+        </h1>
         <p className="mt-6 body2-v2 text-white4">
-          Help us Empower and secure <br /> the Zilliqa Chain{" "}
+          Give it a try, and give us your feedback !
         </p>
       </div>
 
       <div className="flex flex-col items-center mt-12.5 ">
-        <CustomWalletConnect notConnectedClassName="btn-primary-gradient-aqua !w-fit px-14 group flex items-center">
+        <CustomWalletConnect notConnectedClassName="btn-primary-teal !w-fit px-14 group flex items-center">
           <div className="flex">
             Connect wallet
             <Image
