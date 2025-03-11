@@ -6,7 +6,7 @@ import {
   convertTokenToZil,
   formatPercentage,
   formatUnitsToHumanReadable,
-  getHumanFormDuration,
+  formatUnitsWithMaxPrecision,
 } from "@/misc/formatting"
 import { StakingPool, StakingPoolType } from "@/misc/stakingPoolsConfig"
 import {
@@ -201,15 +201,14 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
         "",
         <>
           1 {stakingPoolData.definition.tokenSymbol} = ~ <br />
-          {parseFloat(
-            formatUnits(
-              convertTokenToZil(
-                parseEther("1"),
-                stakingPoolData.data.zilToTokenRate
-              ),
-              18
-            )
-          ).toFixed(2)}{" "}
+          {formatUnitsWithMaxPrecision(
+            convertTokenToZil(
+              parseEther("1"),
+              stakingPoolData.data.zilToTokenRate
+            ),
+            18,
+            3
+          )}{" "}
           ZIL
         </>,
         ""
@@ -253,7 +252,7 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
   }
 
   return (
-    <div className="relative pb-2 4k:pb-4 flex flex-col h-full ">
+    <div className="relative pb-24 lg:pb-2 4k:pb-4 flex flex-col h-full ">
       <div className="items-center flex justify-between py-1 lg:py-7.5 px-4 lg:pr-2.5 4k:pr-6 xs:mx-5 lg:mx-7.5 4k:mx-10 ">
         <div className="max-lg:ms-1 items-center w-full flex justify-between mb-5">
           <div className="flex items-center">
@@ -276,14 +275,14 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                   title="Add token to wallet"
                 >
                   <div
-                    className={`ml-4 rounded-160 border-[1px] border-transparent ${isClicked && "hover:!border-purple4"}`}
+                    className={`ml-0.5 xxs:ml-4 rounded-160 border-[1px] border-transparent ${isClicked && "hover:!border-purple4"}`}
                   >
                     <div
                       onMouseDown={handleMouseDown}
                       onMouseUp={handleMouseUp}
                       onClick={handleClickAaddToken}
                       onMouseLeave={handleMouseUp}
-                      className={`group btn-primary-purple px-2 py-1.5 border-purple4 border-[1px] flex items-center justify-center transition-all duration-300 cursor-pointer overflow-hidden
+                      className={`group btn-primary-purple px-0.5 xxs:px-2 py-0.5 xxs:py-1.5 border-purple4 border-[1px] flex items-center justify-center transition-all duration-300 cursor-pointer overflow-hidden
                         ${isClicked && "hover:!shadow-[0px_0px_0px_0px_#522EFF]"}`}
                     >
                       <Image
@@ -294,7 +293,7 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                         height={20}
                       />
                       <div className="overflow-hidden transition-all duration-300 max-w-0 group-hover:max-w-28">
-                        <span className="ml-1.5 mr-1 text-10 font-medium tracking-normal text-white3 whitespace-nowrap block transform translate-x-[-100%] group-hover:translate-x-0 transition-all duration-300 opacity-0 group-hover:opacity-100">
+                        <span className="ml-1.5 mr-1 text-13 font-medium tracking-normal text-white3 whitespace-nowrap block transform translate-x-[-100%] group-hover:translate-x-0 transition-all duration-300 opacity-0 group-hover:opacity-100">
                           Add Token
                         </span>
                       </div>
@@ -383,7 +382,10 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                         )} ${stakingPoolData.definition.tokenSymbol}`
                       : "-",
                     <>
-                      <div>Amount of ZIL requested</div>
+                      <div>
+                        Amount of unstaked ZIL available after the unbonding
+                        period
+                      </div>
                       {isPoolLiquid() &&
                         userStakingPoolData &&
                         pendingUnstakesValue &&
@@ -476,7 +478,7 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                               pendingUnstakesValue
                             )} ${stakingPoolData.definition.tokenSymbol}`
                           : "-",
-                        "Amount of ZIL requested"
+                        "Amount of unstaked ZIL available after the unbonding period"
                       )}
                     </div>
                   )}
@@ -579,7 +581,7 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                             pendingUnstakesValue
                           )} ${stakingPoolData.definition.tokenSymbol}`
                         : "-",
-                      "Amount of ZIL requested"
+                      "Amount of unstaked ZIL available after the unbonding period"
                     )}
                     {stakingPoolForView != null &&
                       colorInfoEntry(
@@ -639,7 +641,7 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
           ))}
         </div>
 
-        <div className="flex-1 pb-4 mb-16 lg:mb-0 ">
+        <div className="flex-1 pb-10 mb-6 lg:mb-0 ">
           {selectedPane === "Stake" ? (
             <StakingCalculator />
           ) : selectedPane === "Unstake" ? (
