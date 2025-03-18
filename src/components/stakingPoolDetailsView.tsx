@@ -224,12 +224,10 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
   }
   const { isWalletConnected } = WalletConnector.useContainer()
   const { stakingPoolForView } = StakingPoolsStorage.useContainer()
-  const availableUnstake = userUnstakingPoolData
-    ?.filter((claim) => claim.availableAt <= DateTime.now())
-    .toSorted(
-      (claimA, claimB) =>
-        claimA.availableAt.diff(claimB.availableAt).milliseconds
-    )
+  const availableUnstake =
+    userUnstakingPoolData
+      ?.filter((claim) => claim.availableAt <= DateTime.now())
+      .reduce((acc, claim) => acc + claim.zilAmount, 0n) || 0n
 
   const [isClicked, setIsClicked] = useState(false)
 
@@ -356,20 +354,16 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                     <>
                       <div>Amount of ZIL currently staked</div>
                       {isPoolLiquid() &&
-                        userStakingPoolData &&
-                        userStakingPoolData.stakingTokenAmount &&
+                        userStakingPoolData?.stakingTokenAmount &&
                         stakingPoolData.data != null && (
                           <div className="mt-1">
-                            {`                    
-                      ( ~
-                          ${formatUnitsToHumanReadable(
-                            convertTokenToZil(
-                              userStakingPoolData.stakingTokenAmount,
-                              stakingPoolData.data.zilToTokenRate
-                            ),
-                            18
-                          )} 
-                      ZIL )`}
+                            {`( ~ ${formatUnitsToHumanReadable(
+                              convertTokenToZil(
+                                userStakingPoolData.stakingTokenAmount,
+                                stakingPoolData.data.zilToTokenRate
+                              ),
+                              18
+                            )} ZIL )`}
                           </div>
                         )}
                     </>
@@ -377,32 +371,13 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                   {colorInfoEntry(
                     "Unstaked ",
                     pendingUnstakesValue
-                      ? `${humanReadableStakingToken(
-                          pendingUnstakesValue
-                        )} ${stakingPoolData.definition.tokenSymbol}`
+                      ? `${humanReadableStakingToken(pendingUnstakesValue)} ZIL`
                       : "-",
                     <>
                       <div>
                         Amount of unstaked ZIL available after the unbonding
                         period
                       </div>
-                      {isPoolLiquid() &&
-                        userStakingPoolData &&
-                        pendingUnstakesValue &&
-                        stakingPoolData.data != null && (
-                          <div className="mt-1">
-                            {`                    
-                      ( ~
-                          ${formatUnitsToHumanReadable(
-                            convertTokenToZil(
-                              pendingUnstakesValue,
-                              stakingPoolData.data.zilToTokenRate
-                            ),
-                            18
-                          )} 
-                      ZIL )`}
-                          </div>
-                        )}
                     </>
                   )}
                   {colorInfoEntry(
@@ -476,7 +451,7 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                         pendingUnstakesValue
                           ? `${humanReadableStakingToken(
                               pendingUnstakesValue
-                            )} ${stakingPoolData.definition.tokenSymbol}`
+                            )} ZIL`
                           : "-",
                         "Amount of unstaked ZIL available after the unbonding period"
                       )}
@@ -508,13 +483,8 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                       >
                         {asideColorInfoEntry(
                           "Claimable Withdrawals",
-                          !!availableUnstake?.length
-                            ? availableUnstake
-                                .map(
-                                  (item) =>
-                                    `${parseFloat(formatUnits(item.zilAmount, 18)).toFixed(3)} ZIL`
-                                )
-                                .join(", ")
+                          !!availableUnstake
+                            ? `${formatUnitsToHumanReadable(availableUnstake, 18)} ZIL`
                             : "-",
                           "Unstaked ZIL available to claim"
                         )}
@@ -522,7 +492,7 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                           asideColorInfoEntry(
                             "Claimable Rewards",
                             stakingPoolForView.userData.reward
-                              ? `${parseFloat(formatUnits(stakingPoolForView.userData.reward?.zilRewardAmount ?? "0", 18)).toFixed(5)} ZIL`
+                              ? `${formatUnitsToHumanReadable(stakingPoolForView.userData.reward?.zilRewardAmount ?? "0", 18)} ZIL`
                               : "-",
                             "Earned ZIL available to claim"
                           )}
@@ -579,7 +549,7 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                       pendingUnstakesValue
                         ? `${humanReadableStakingToken(
                             pendingUnstakesValue
-                          )} ${stakingPoolData.definition.tokenSymbol}`
+                          )} ZIL`
                         : "-",
                       "Amount of unstaked ZIL available after the unbonding period"
                     )}
@@ -587,7 +557,7 @@ const StakingPoolDetailsView: React.FC<StakingPoolDetailsViewProps> = ({
                       colorInfoEntry(
                         "Claimable Rewards",
                         stakingPoolForView.userData.reward
-                          ? `${parseFloat(formatUnits(stakingPoolForView.userData.reward?.zilRewardAmount ?? "0", 18)).toFixed(5)} ZIL`
+                          ? `${formatUnitsToHumanReadable(stakingPoolForView.userData.reward?.zilRewardAmount ?? "0", 18)} ZIL`
                           : "-",
                         "Earned ZIL available to claim"
                       )}
