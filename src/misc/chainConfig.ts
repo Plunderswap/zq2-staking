@@ -1,6 +1,7 @@
 import { connectorsForWallets } from "@rainbow-me/rainbowkit"
 import {
   coinbaseWallet,
+  injectedWallet,
   ledgerWallet,
   metaMaskWallet,
   phantomWallet,
@@ -103,6 +104,7 @@ function getConnectorsForWallets(walletConnectApiKey: string, appUrl: string) {
       {
         groupName: "Recommended",
         wallets: [
+          injectedWallet,
           metaMaskWallet,
           walletConnectWallet,
           coinbaseWallet,
