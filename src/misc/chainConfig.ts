@@ -8,6 +8,7 @@ import {
   rainbowWallet,
   trustWallet,
   walletConnectWallet,
+  injectedWallet,
 } from "@rainbow-me/rainbowkit/wallets"
 import { createClient, createPublicClient, defineChain, http } from "viem"
 import { createConfig } from "wagmi"
@@ -111,6 +112,7 @@ function getConnectorsForWallets(walletConnectApiKey: string, appUrl: string) {
           ledgerWallet,
           rainbowWallet,
           phantomWallet,
+          injectedWallet,
         ],
       },
     ],
