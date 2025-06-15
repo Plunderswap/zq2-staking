@@ -12,6 +12,7 @@ import {
 } from "@rainbow-me/rainbowkit/wallets"
 import { createClient, createPublicClient, defineChain, http } from "viem"
 import { createConfig } from "wagmi"
+import { zilPayWallet } from "./zilPayWallet"
 
 export const CHAIN_ZQ2_DEVNET = defineChain({
   id: 33469,
@@ -99,11 +100,14 @@ export const MOCK_CHAIN = defineChain({
 })
 
 function getConnectorsForWallets(walletConnectApiKey: string, appUrl: string) {
+  const projectId = walletConnectApiKey
+
   return connectorsForWallets(
     [
       {
         groupName: "Recommended",
         wallets: [
+          zilPayWallet,
           metaMaskWallet,
           walletConnectWallet,
           coinbaseWallet,
@@ -118,7 +122,7 @@ function getConnectorsForWallets(walletConnectApiKey: string, appUrl: string) {
     ],
     {
       appName: "ZQ2 Staking",
-      projectId: walletConnectApiKey,
+      projectId: projectId,
       appUrl,
     }
   )
